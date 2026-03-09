@@ -1,0 +1,62 @@
+Climate Conference Project
+Database: https://www.db-fiddle.com/f/pxMci1sLL945KHKYvpe9W6/1
+
+LEFT JOIN: List all VIPs and their associated hotel reservations, including VIPs who may not have made a reservation.
+Select vips.member_id, vips.first_name, vips.last_name,reservations.hotel
+From vips
+Left Join reservations
+On vips.member_id = reservations.member_id;
+
+INNER JOIN: Find the names of VIPs who have RSVP’d for the welcome event.
+Select vips.first_name, vips.last_name
+From vips
+Join reservations
+On vips.member_id = reservations.member_id
+Where welcome_rsvp = 1;
+
+Multiple JOINs: Retrieve event names, attendee names, and their hotel names.
+Select events.event_name, vips.first_name, vips.last_name,
+hotels.hotel_name
+From vips
+Inner Join events
+On vips.event = events.event_id
+Left Join reservations
+On vips.member_id = reservations.member_id
+Left Join hotels
+On reservations.hotel = hotels.hotel_id;
+
+SELF JOIN: Find VIPs who provide feedback to others and the corresponding VIPs who receive their feedback.
+Select v1.first_name as feedback_giver, v1.last_name as giver_last,
+	   v2.first_name as feedback_receiver, v2.last_name as giver_last
+From vips v1
+Join vips v2
+On v1.provides_feedback_to = v2.member_id;
+
+Query with a Subquery: Find VIPs staying at the hotel with the most reservations.
+Select vips.first_name, vips.last_name, hotels.hotel_name
+From vips
+Inner Join reservations
+On vips.member_id = reservations.member_id
+Join hotels
+On reservations.hotel = hotels.hotel_id
+Where reservations.hotel = (Select hotel
+                            From reservations
+                            Group by hotel
+                            ORDER BY COUNT(*) DESC 
+                            Limit 1);
+
+Custom Query: Get a list of all government-affiliated VIPs who have RSVP’d for dinner.
+Select vips.first_name, vips.last_name, vips.association
+From vips
+Join reservations
+On vips.member_id = reservations.member_id
+Where vips.assoc_type = "government"
+And reservations.dinner_rsvp = 1;
+
+Custom Query: Find the number of VIPs attending each event, ordered by event attendance.
+Select events.event_name, COUNT(vips.member_id) AS attendee_count
+From events
+Left Join vips
+On events.event_id = vips.event
+Group by events.event_name
+Order by attendee_count desc;
